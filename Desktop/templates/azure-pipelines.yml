@@ -1,0 +1,177 @@
+# File: azure-pipelines.yml
+trigger:
+- main
+
+extends:
+  template: simple-param.yml
+  parameters:
+      yesNo: false # set to a non-boolean value to have the build fail
+
+# File: azure-pipelines.yml
+trigger:
+- main
+
+extends:
+  template: start.yml
+  parameters:
+    buildSteps:  
+      - bash: echo Test #Passes
+        displayName: succeed
+      - bash: echo "Test"
+        displayName: succeed
+      # Step is rejected by raising a YAML syntax error: Unexpected value 'CmdLine@2'
+      - task: CmdLine@2
+        inputs:
+          script: echo "Script Test"
+      # Step is rejected by raising a YAML syntax error: Unexpected value 'CmdLine@2'
+      - script: echo "Script Test"
+
+# File: azure-pipelines.yml
+trigger:
+- none
+
+extends:
+  template: resource-template.yml
+
+# File: azure-pipelines.yml
+
+jobs:
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - template: templates/include-npm-steps.yml  # Template reference
+- job: Windows
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - template: templates/include-npm-steps.yml  # Template reference
+
+# File: azure-pipelines.yml
+
+jobs:
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - template: templates/npm-steps.yml  # Template reference
+
+- job: macOS
+  pool:
+    vmImage: 'macOS-latest'
+  steps:
+  - template: templates/npm-steps.yml  # Template reference
+
+- job: Windows
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - script: echo This script runs before the template's steps, only on Windows.
+  - template: templates/npm-steps.yml  # Template reference
+  - script: echo This step runs after the template's steps.
+
+# File: azure-pipelines.yml
+
+jobs:
+- template: templates/jobs.yml  # Template reference
+
+# File: azure-pipelines.yml
+
+jobs:
+- template: templates/jobs.yml  # Template reference
+- template: templates/jobs.yml  # Template reference
+- template: templates/jobs.yml  # Template reference
+
+# File: azure-pipelines.yml
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Install
+  jobs: 
+  - job: npminstall
+    steps:
+    - task: Npm@1
+      inputs:
+        command: 'install'
+- template: templates/stages1.yml
+- template: templates/stages2.yml
+
+# File: azure-pipelines.yml
+
+jobs:
+- template: templates/npm-with-params.yml  # Template reference
+  parameters:
+    name: Linux
+    vmImage: 'ubuntu-latest'
+
+- template: templates/npm-with-params.yml  # Template reference
+  parameters:
+    name: macOS
+    vmImage: 'macOS-latest'
+
+- template: templates/npm-with-params.yml  # Template reference
+  parameters:
+    name: Windows
+    vmImage: 'windows-latest'
+
+# File: azure-pipelines.yml
+
+steps:
+- script: npm install
+
+- template: templates/steps-with-params.yml  # Template reference
+  parameters:
+    runExtendedTests: 'true'
+
+# azure-pipelines.yml
+jobs:
+- template: process.yml
+  parameters:
+    pool:   # this parameter is called `pool`
+      vmImage: ubuntu-latest  # and it's a mapping rather than a string
+
+
+# process.yml
+parameters:
+- name: 'pool'
+  type: object
+  default: {}
+
+jobs:
+- job: build
+  pool: ${{ parameters.pool }}
+
+# File: azure-pipelines.yml
+
+variables:
+- template: vars.yml  # Template reference
+
+steps:
+- script: echo My favorite vegetable is ${{ variables.favoriteVeggie }}.
+
+# File: azure-pipelines.yml
+
+variables: # Global variables
+  - template: package-release-with-params.yml # Template reference
+    parameters:
+      DIRECTORY: "azure/checker"
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Release_Stage 
+  displayName: Release Version
+  variables: # Stage variables
+  - template: package-release-with-params.yml  # Template reference
+    parameters:
+      DIRECTORY: "azure/todo-list"
+  jobs: 
+  - job: A
+    steps: 
+    - bash: $(RELEASE_COMMAND) #output release command
+

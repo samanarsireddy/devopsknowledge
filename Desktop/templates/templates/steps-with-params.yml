@@ -1,0 +1,11 @@
+# File: templates/steps-with-params.yml
+
+parameters:
+- name: 'runExtendedTests'  # defaults for any parameters that aren't specified
+  type: boolean
+  default: false
+
+steps:
+- script: npm test
+- ${{ if eq(parameters.runExtendedTests, true) }}:
+  - script: npm test --extended

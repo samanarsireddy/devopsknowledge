@@ -1,0 +1,8 @@
+# File: resource-template.yml
+resources:
+  pipelines:
+  - pipeline: my-pipeline 
+    source: sourcePipeline
+
+steps:
+ - script: echo "Testing resource template"
